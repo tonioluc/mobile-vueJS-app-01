@@ -12,7 +12,7 @@
         </ion-toolbar>
       </ion-header>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button>
+        <ion-fab-button @click="addNewToGallery">
           <ion-icon :icon="camera"></ion-icon>
         </ion-fab-button>
       </ion-fab>
@@ -23,4 +23,6 @@
 <script setup lang="ts">
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent,IonIcon,IonFab,IonFabButton } from '@ionic/vue';
 import { camera } from 'ionicons/icons';
+import { usePhotoGallery } from '@/composables/usePhotoGallery';
+const { addNewToGallery } = usePhotoGallery();
 </script>
