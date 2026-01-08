@@ -1,5 +1,7 @@
 {
   "name": "VueApp01",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "vue-vite"
 }
