@@ -4,6 +4,8 @@ import router from './router';
 
 import { IonicVue } from '@ionic/vue';
 
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
+
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
 
@@ -33,6 +35,9 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+
+// CHANGE: Call the element loader before the createApp() call
+defineCustomElements(window);
 
 const app = createApp(App)
   .use(IonicVue)
