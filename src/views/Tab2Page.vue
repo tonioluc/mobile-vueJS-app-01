@@ -11,8 +11,17 @@
           <ion-title size="large">Photo Gallery</ion-title>
         </ion-toolbar>
       </ion-header>
+      <!-- CHANGE: Add a grid component to display the photos -->
+      <ion-grid>
+        <ion-row>
+          <!-- CHANGE: Create a new column and image component for each photo -->
+          <ion-col size="6" :key="photo.filepath" v-for="photo in photos">
+            <ion-img :src="photo.webviewPath"></ion-img>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button @click="addNewToGallery">
+        <ion-fab-button @click="addNewToGallery()">
           <ion-icon :icon="camera"></ion-icon>
         </ion-fab-button>
       </ion-fab>
@@ -21,8 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent,IonIcon,IonFab,IonFabButton } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton } from '@ionic/vue';
 import { camera } from 'ionicons/icons';
 import { usePhotoGallery } from '@/composables/usePhotoGallery';
-const { addNewToGallery } = usePhotoGallery();
+const { photos, addNewToGallery } = usePhotoGallery();
+
 </script>
