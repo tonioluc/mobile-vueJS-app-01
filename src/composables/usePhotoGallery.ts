@@ -1,10 +1,14 @@
-import { ref } from 'vue';
+// CHANGE: Update import
+import { ref, watch, onMounted } from 'vue';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import type { Photo } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Preferences } from '@capacitor/preferences';
 
 export const usePhotoGallery = () => {
   const photos = ref<UserPhoto[]>([]);
+
+  const PHOTO_STORAGE = 'photos';
 
   const addNewToGallery = async () => {
     // Take a photo
@@ -15,7 +19,6 @@ export const usePhotoGallery = () => {
     });
 
     const fileName = Date.now() + '.jpeg';
-    // Save the picture and add it to photo collection
     const savedImageFile = await savePicture(capturedPhoto, fileName);
 
     photos.value = [savedImageFile, ...photos.value];
@@ -32,8 +35,7 @@ export const usePhotoGallery = () => {
       data: base64Data,
       directory: Directory.Data,
     });
-    console.log(savedFile.uri);
-    
+
     // Use webPath to display the new image instead of base64 since it's
     // already loaded into memory
     return {
@@ -52,6 +54,32 @@ export const usePhotoGallery = () => {
       reader.readAsDataURL(blob);
     });
   };
+
+  const cachePhotos = () => {
+    Preferences.set({
+      key: PHOTO_STORAGE,
+      value: JSON.stringify(photos.value),
+    });
+  };
+
+  const loadSaved = async () => {
+    const photoList = await Preferences.get({ key: PHOTO_STORAGE });
+    const photosInPreferences = photoList.value ? JSON.parse(photoList.value) : [];
+
+    for (const photo of photosInPreferences) {
+      const readFile = await Filesystem.readFile({
+        path: photo.filepath,
+        directory: Directory.Data,
+      });
+      photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+    }
+
+    photos.value = photosInPreferences;
+  };
+
+  // CHANGE: Add call to `onMounted()` with the `loadSaved()` method
+  onMounted(loadSaved);
+  watch(photos, cachePhotos);
 
   return {
     addNewToGallery,
