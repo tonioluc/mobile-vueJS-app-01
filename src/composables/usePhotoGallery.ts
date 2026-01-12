@@ -1,5 +1,7 @@
-import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
-import { ref } from "vue";
+import { ref } from 'vue';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import type { Photo } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export const usePhotoGallery = () => {
   const photos = ref<UserPhoto[]>([]);
@@ -11,23 +13,52 @@ export const usePhotoGallery = () => {
       source: CameraSource.Camera,
       quality: 100,
     });
-    // CHANGE: Create the `fileName` with current timestamp
-    const fileName = Date.now() + ".jpeg";
-    // CHANGE: Create `savedImageFile` matching `UserPhoto` interface
-    const savedImageFile = {
-      filepath: fileName,
-      webviewPath: capturedPhoto.webPath,
-    };
 
-    // CHANGE: Update the `photos` array with the new photo
+    const fileName = Date.now() + '.jpeg';
+    // Save the picture and add it to photo collection
+    const savedImageFile = await savePicture(capturedPhoto, fileName);
+
     photos.value = [savedImageFile, ...photos.value];
   };
+
+  const savePicture = async (photo: Photo, fileName: string): Promise<UserPhoto> => {
+    // Fetch the photo, read as a blob, then convert to base64 format
+    const response = await fetch(photo.webPath!);
+    const blob = await response.blob();
+    const base64Data = (await convertBlobToBase64(blob)) as string;
+
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Data,
+    });
+    console.log(savedFile.uri);
+    
+    // Use webPath to display the new image instead of base64 since it's
+    // already loaded into memory
+    return {
+      filepath: fileName,
+      webviewPath: photo.webPath,
+    };
+  };
+
+  const convertBlobToBase64 = (blob: Blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.readAsDataURL(blob);
+    });
+  };
+
   return {
     addNewToGallery,
     photos,
   };
 };
-// CHANGE: Add the `UserPhoto` interface
+
 export interface UserPhoto {
   filepath: string;
   webviewPath?: string;
